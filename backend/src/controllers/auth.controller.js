@@ -84,7 +84,7 @@ function logoutUser(req, res) {
 }
 
 async function registerFoodPartner(req, res) {
-  const { name, email, password } = req.body;
+  const { name, contactName, phone, address, email, password } = req.body;
   const isAccountAlreadyExists = await foodPartnerModel.findOne({ email });
 
   if (isAccountAlreadyExists) {
@@ -97,6 +97,9 @@ async function registerFoodPartner(req, res) {
 
   const foodPartner = await foodPartnerModel.create({
     name,
+    contactName,
+    phone,
+    address,
     email,
     password: hashedPassword,
   });
@@ -115,6 +118,9 @@ async function registerFoodPartner(req, res) {
       _id: foodPartner._id,
       name: foodPartner.name,
       email: foodPartner.email,
+      contactName: foodPartner.contactName,
+      phone: foodPartner.phone,
+      address: foodPartner.address,
     },
   });
 }

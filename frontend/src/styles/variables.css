@@ -1,0 +1,31 @@
+/* Centralized CSS variables for light/dark themes */
+:root {
+  --bg: #ffffff;
+  --surface: #f8f9fa;
+  --text: #0f172a;
+  --muted: #6b7280;
+  --primary: #2563eb;
+  --primary-contrast: #ffffff;
+  --radius: 10px;
+  --shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  --glass: rgba(255, 255, 255, 0.6);
+  /* Card colors: set dark form appearance by default */
+  --card-bg: rgba(10, 15, 25, 0.9);
+  --card-text: #e6eef8;
+  --input-bg: rgba(255, 255, 255, 0.03);
+  --input-border: rgba(255, 255, 255, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1220;
+    --surface: #071223;
+    --text: #e6eef8;
+    --muted: #9aa8bf;
+    --primary: #60a5fa;
+    --primary-contrast: #0b1220;
+    --radius: 10px;
+    --shadow: 0 8px 30px rgba(2, 6, 23, 0.6);
+    --glass: rgba(12, 18, 28, 0.4);
+  }
+}
