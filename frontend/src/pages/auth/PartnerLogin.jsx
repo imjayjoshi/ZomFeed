@@ -1,7 +1,29 @@
 import React from "react";
-import "../styles/shared.css";
+// styles provided via Tailwind in src/index.css
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const PartnerLogin = () => {
+  const navigate = useNavigate();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+
+    const response = await axios.post(
+      "http://localhost:3000/api/auth/foodpartner/login",
+      {
+        email: email,
+        password: password,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+    console.log(response.data);
+    navigate("/create-food");
+  };
   return (
     <div className="auth-page">
       <div className="auth-card">
@@ -12,7 +34,7 @@ const PartnerLogin = () => {
           </div>
         </div>
 
-        <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
+        <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-row">
             <label htmlFor="email">Email</label>
             <input

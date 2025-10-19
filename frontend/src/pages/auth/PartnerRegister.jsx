@@ -1,8 +1,43 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "../styles/shared.css";
+// styles provided via Tailwind in src/index.css
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const PartnerRegister = () => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const firstName = e.target.firstName.value;
+    const lastName = e.target.lastName.value;
+    const businessName = e.target.businessName.value;
+    const contactName = e.target.contactName.value;
+    const phone = e.target.phone.value;
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+    const address = e.target.address.value;
+
+    const response = await axios.post(
+      "http://localhost:3000/api/auth/foodpartner/register",
+      {
+        name: firstName + " " + lastName,
+        businessName: businessName,
+        contactName: contactName,
+        phone: phone,
+        email: email,
+        password: password,
+        address: address,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+    console.log(response.data);
+
+    navigate("/create-food");
+  };
   return (
     <div className="auth-page">
       <div className="auth-card">
@@ -18,7 +53,7 @@ const PartnerRegister = () => {
           <Link to="/food-partner/register">Food partner</Link>
         </div>
 
-        <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
+        <form className="auth-form" onSubmit={handleSubmit}>
           <div className="name-row">
             <div className="form-row">
               <label htmlFor="firstName">First name</label>

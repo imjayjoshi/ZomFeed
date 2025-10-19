@@ -1,4 +1,6 @@
 const foodModel = require("../models/food.model");
+const Like = require("../models/likes.model");
+const Save = require("../models/save.model");
 const storageService = require("../services/storage.service");
 const { v4: uuid } = require("uuid");
 
@@ -28,7 +30,79 @@ async function getFoodItems(req, res) {
   });
 }
 
+async function likeFood(req, res) {
+  const { foodId } = req.body;
+  const userId = req.user._id;
+  const isFoodLiked = await Like.findOne({ user: userId, food: foodId });
+
+  if (isFoodLiked) {
+    await Like.deleteOne({ user: userId, food: foodId });
+    const updatedFood = await foodModel.findOneAndUpdate(
+      { _id: foodId },
+      { $inc: { likeCount: -1 } },
+      { new: true }
+    );
+    return res.status(200).json({
+      message: "Food unliked successfully",
+      likeCount: updatedFood.likeCount,
+    });
+  }
+
+  const like = await Like.create({ user: userId, food: foodId });
+  const updatedFood = await foodModel.findOneAndUpdate(
+    { _id: foodId },
+    { $inc: { likeCount: 1 } },
+    { new: true }
+  );
+  return res.status(201).json({
+    message: "Food liked successfully",
+    likeCount: updatedFood.likeCount,
+  });
+}
+
+async function saveFood(req, res) {
+  const { foodId } = req.body;
+  const userId = req.user._id;
+  const isFoodSaved = await Save.findOne({ user: userId, food: foodId });
+
+  if (isFoodSaved) {
+    await Save.deleteOne({ user: userId, food: foodId });
+    const updatedFood = await foodModel.findOneAndUpdate(
+      { _id: foodId },
+      { $inc: { saveCount: -1 } },
+      { new: true }
+    );
+    return res.status(200).json({
+      message: "Food unsaved successfully",
+      saveCount: updatedFood.saveCount,
+    });
+  }
+
+  const save = await Save.create({ user: userId, food: foodId });
+  const updatedFood = await foodModel.findOneAndUpdate(
+    { _id: foodId },
+    { $inc: { saveCount: 1 } },
+    { new: true }
+  );
+  return res.status(201).json({
+    message: "Food saved successfully",
+    saveCount: updatedFood.saveCount,
+  });
+}
+
+async function getSavedFoodItems(req, res) {
+  const userId = req.user._id;
+  const savedFoodItems = await Save.find({ user: userId }).populate("food");
+  return res.status(200).json({
+    message: "Saved food items fetched successfully",
+    savedFoodItems: savedFoodItems,
+  });
+}
+
 module.exports = {
   createFood,
   getFoodItems,
+  likeFood,
+  saveFood,
+  getSavedFoodItems,
 };
