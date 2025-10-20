@@ -18,13 +18,29 @@ export default function Saved() {
       const res = await axios.get("http://localhost:3000/api/food/save", {
         withCredentials: true,
       });
-      const savedFood = (res.data.savedFood || []).map((item) => ({
-        id: item._id,
-        description: item.description || "",
-        storeLink: item.foodPartner || item.store_link || item.storeUrl || "#",
-        videoUrl: item.video || null,
-        isSaved: true,
-      }));
+
+      // ==========================================
+      // MODIFICATION #1: Read from `item.food`
+      // ==========================================
+      const savedFood = (res.data.savedFood || [])
+        .filter((item) => item.food) // Filter out saves where food was deleted
+        .map((item) => ({
+          ...item.food, // Spread all properties from the populated food object
+          id: item.food._id, // Ensure id is the food ID, not the save ID
+          description: item.food.description || "",
+          storeLink:
+            item.food.foodPartner ||
+            item.food.store_link ||
+            item.food.storeUrl ||
+            "#",
+          videoUrl: item.food.video || item.food.videoUrl || null,
+          isSaved: true,
+          // Add other properties from food object to ensure consistency
+          isLiked: item.food.isLiked ?? false,
+          likes: item.food.likeCount ?? 0,
+          comments: item.food.commentCount ?? 0,
+        }));
+
       setReels(savedFood);
       // persist minimal keys so Saved page can fall back to cache
       try {
@@ -49,14 +65,17 @@ export default function Saved() {
         const raw = localStorage.getItem("savedReels") || "[]";
         const minimal = JSON.parse(raw);
         if (Array.isArray(minimal) && minimal.length > 0) {
+          // ==========================================
+          // MODIFICATION #2: Fix localStorage mapping
+          // ==========================================
           const mapped = minimal.map((item) => ({
             id: item.id,
             description: item.description || "",
-            storeLink:
-              item.storeLink || item.store_link || item.storeUrl || "#",
-            videoUrl: item.videoUrl || item.video || null,
+            storeLink: item.storeLink || "#", // Simplified to match persistMinimal
+            videoUrl: item.videoUrl || null, // Read videoUrl from cache
             isSaved: true,
           }));
+
           setReels(mapped);
           setLoadError(
             "Failed to load from server — showing cached saved reels"
@@ -80,12 +99,16 @@ export default function Saved() {
     fetchSaved();
   }, [fetchSaved]);
 
+  // ==========================================
+  // MODIFICATION #3: Save `videoUrl` to localStorage
+  // ==========================================
   const persistMinimal = (list) => {
     try {
       const minimal = list.map((r) => ({
         id: r.id,
         description: r.description,
         storeLink: r.storeLink || "#",
+        videoUrl: r.videoUrl || null, // <-- ADDED THIS
       }));
       localStorage.setItem("savedReels", JSON.stringify(minimal));
     } catch (err) {
@@ -104,13 +127,28 @@ export default function Saved() {
       const fresh = await axios.get("http://localhost:3000/api/food/save", {
         withCredentials: true,
       });
-      const savedFood = (fresh.data.savedFood || []).map((item) => ({
-        id: item._id,
-        description: item.description || "",
-        storeLink: item.storeLink || item.store_link || item.storeUrl || "#",
-        videoUrl: item.videoUrl || item.video || null,
-        isSaved: true,
-      }));
+
+      // ==========================================
+      // MODIFICATION #4: Read from `item.food` (in 2 places)
+      // ==========================================
+      const savedFood = (fresh.data.savedFood || [])
+        .filter((item) => item.food) // Filter out saves where food was deleted
+        .map((item) => ({
+          ...item.food,
+          id: item.food._id,
+          description: item.food.description || "",
+          storeLink:
+            item.food.foodPartner ||
+            item.food.store_link ||
+            item.food.storeUrl ||
+            "#",
+          videoUrl: item.food.video || item.food.videoUrl || null,
+          isSaved: true,
+          isLiked: item.food.isLiked ?? false,
+          likes: item.food.likeCount ?? 0,
+          comments: item.food.commentCount ?? 0,
+        }));
+
       setReels(savedFood);
       persistMinimal(savedFood);
     } catch (err) {
@@ -123,17 +161,27 @@ export default function Saved() {
         const fresh = await axios.get("http://localhost:3000/api/food/save", {
           withCredentials: true,
         });
-        const savedFood = (fresh.data.savedFood || []).map((item) => ({
-          id: item._id,
-          name: item.name,
-          description: item.description,
-          videoUrl: item.videoUrl,
-          likes: item.likeCount ?? 0,
-          comments: item.commentCount ?? 0,
-          storeLink: item.storeLink,
-          isLiked: item.isLiked ?? false,
-          isSaved: true,
-        }));
+
+        // This is the mapping from your error-handling block
+        const savedFood = (fresh.data.savedFood || [])
+          .filter((item) => item.food) // Filter out saves where food was deleted
+          .map((item) => ({
+            ...item.food,
+            id: item.food._id,
+            name: item.food.name,
+            description: item.food.description || "",
+            videoUrl: item.food.video || item.food.videoUrl || null,
+            likes: item.food.likeCount ?? 0,
+            comments: item.food.commentCount ?? 0,
+            storeLink:
+              item.food.storeLink ||
+              item.food.store_link ||
+              item.food.storeUrl ||
+              "#",
+            isLiked: item.food.isLiked ?? false,
+            isSaved: true,
+          }));
+
         setReels(savedFood);
         persistMinimal(savedFood);
       } catch (err2) {

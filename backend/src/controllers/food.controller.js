@@ -90,13 +90,22 @@ async function saveFood(req, res) {
   });
 }
 
+// In your controller file
 async function getSavedFoodItems(req, res) {
-  const userId = req.user._id;
-  const savedFoodItems = await Save.find({ user: userId }).populate("food");
-  return res.status(200).json({
-    message: "Saved food items fetched successfully",
-    savedFoodItems: savedFoodItems,
-  });
+  try {
+    const userId = req.user._id;
+    const savedFoodItems = await Save.find({ user: userId }).populate("food");
+
+    return res.status(200).json({
+      message: "Saved food items fetched successfully",
+      savedFood: savedFoodItems,
+    });
+  } catch (error) {
+    console.error("Error in getSavedFoodItems:", error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
 }
 
 module.exports = {
